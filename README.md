@@ -5,6 +5,7 @@ This is a RIAK based redirector for SQUID. The idea is following:
   
 COMPILE
   
+      gcc -c -g `pkg-config --cflags libcurl` `pkg-config --cflags libconfig` -MMD -MP -MF "redir.o.d" -o redir.o redir.c
       gcc -o sqriakredirector build/Debug/GNU-Linux-x86/redir.o `pkg-config --libs libcurl` `pkg-config --libs libconfig`   -Wall -pedantic -ansi
   
 INSTALL
