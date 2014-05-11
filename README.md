@@ -5,13 +5,15 @@ This is a RIAK based redirector for SQUID. The idea is following:
   
 COMPILE
   
-    gcc -o sqriakredirector build/Debug/GNU-Linux-x86/redir.o `pkg-config --libs libcurl` `pkg-config --libs libconfig`   -Wall -pedantic -ansi
+      gcc -o sqriakredirector build/Debug/GNU-Linux-x86/redir.o `pkg-config --libs libcurl` `pkg-config --libs libconfig`   -Wall -pedantic -ansi
   
 INSTALL
+
     url_rewrite_program /path/to/redirector /path/to/sqriak.conf
     url_rewrite_bypass off
     url_rewrite_children 10
 
 TODO
+
     add pid file support
     add blocking/redirecting support by user
