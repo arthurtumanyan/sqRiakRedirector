@@ -10,6 +10,8 @@ COMPILE
   
 INSTALL
 
+  Add to squid.conf followed lines
+  
     url_rewrite_program /path/to/redirector /path/to/sqriak.conf
     url_rewrite_bypass off
     url_rewrite_children 10
