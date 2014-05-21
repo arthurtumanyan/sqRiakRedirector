@@ -1,21 +1,3 @@
-/*
-    sqRiakRedirector is a RIAK based SQUID rewrite software.
-    Copyright (C) 2014  Arthur Tumanyan <arthurtumanyan@google.com>
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +19,10 @@ struct {
     char kvpairs[64];
 } URL_ENTRY;
 
+typedef struct {
+    char url[256];
+} _redirect_url;
+_redirect_url st;
 
 static char p_string[1024];
 static char config_file[256];
@@ -61,7 +47,7 @@ static void handler_sigusr();
 static void set_sig_handler();
 static void readConfig(char *);
 static int is_valid_ip(const char *);
-static size_t write_func(void *, size_t, size_t, void *);
+static size_t write_func(void *, size_t, size_t, _redirect_url *);
 
 const char ident[] = "SquriakRedirector";
 
@@ -118,7 +104,11 @@ int main(int argc, char **argv) {
                 purify_url2(URL_ENTRY.url);
             }
             if (is_blocked(URL_ENTRY.url)) {
-                fprintf(stdout, "%s\n", redirect_url);
+                if (st.url == NULL || 0 == strcmp(st.url, "{}")) {
+                    fprintf(stdout, "%s\n", redirect_url);
+                } else {
+                    fprintf(stdout, "%s\n", st.url);
+                }
             } else {
                 puts("");
             }/* non blocked */
@@ -320,6 +310,7 @@ static bool is_blocked(char *url) {
     curl_easy_setopt(hnd, CURLOPT_CONNECTTIMEOUT, 2L);
     curl_easy_setopt(hnd, CURLOPT_NOSIGNAL, 1L);
     curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, write_func);
+    curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &st);
     curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
     ret = curl_easy_perform(hnd);
     curl_easy_getinfo(hnd, CURLINFO_RESPONSE_CODE, &http_code);
@@ -333,7 +324,15 @@ static bool is_blocked(char *url) {
     return rv;
 }
 
-static size_t write_func(void *ptr, size_t size, size_t nmemb, void *stream) {
+static size_t write_func(void *ptr, size_t size, size_t nmemb, _redirect_url *url) {
+    memset(url->url, '\0', sizeof (url->url));
+    if (NULL == ptr) {
+        return -1;
+    }
+    if ((NULL != strstr(ptr, "http://")) || (NULL != strstr(ptr, "https://"))) {
+        return -1;
+    }
+    strncpy(url->url, ptr, 255);
     return 0;
 }
 
