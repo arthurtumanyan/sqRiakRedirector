@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
                 purify_url2(URL_ENTRY.url);
             }
             if (is_blocked(URL_ENTRY.url)) {
-                if (st.url == NULL || 0 == strcmp(st.url, "{}")) {
+                if (st.url == NULL || 0 == strcmp(st.url, "{}") || 0 == strcmp(st.url, "")) {
                     fprintf(stdout, "%s\n", redirect_url);
                 } else {
                     fprintf(stdout, "%s\n", st.url);
@@ -298,8 +298,11 @@ static bool is_blocked(char *url) {
     CURL *hnd;
     long http_code = 0;
     char request[1024];
+    memset(request, '\0', 1024);
     int sz = strlen(rhost) + strlen(bucket) + strlen(url) + 30;
     snprintf(request, sz, "http://%s:%d/buckets/%s/keys/%s", rhost, rport, bucket, url);
+    request[sz] = '\0';
+
     hnd = curl_easy_init();
     curl_easy_setopt(hnd, CURLOPT_URL, request);
     curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
@@ -327,9 +330,6 @@ static bool is_blocked(char *url) {
 static size_t write_func(void *ptr, size_t size, size_t nmemb, _redirect_url *url) {
     memset(url->url, '\0', sizeof (url->url));
     if (NULL == ptr) {
-        return -1;
-    }
-    if ((NULL != strstr(ptr, "http://")) || (NULL != strstr(ptr, "https://"))) {
         return -1;
     }
     strncpy(url->url, ptr, 255);
