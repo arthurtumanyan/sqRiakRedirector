@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
     char tmp_fqdn_ip[272];
     int opt, sz = 0;
-
+    curl_global_init(CURL_GLOBAL_ALL);
     memset(p_string, '\0', 1024);
     openlog(ident, LOG_CONS | LOG_PID | LOG_NDELAY, LOG_INFO);
     set_sig_handler();
@@ -124,6 +124,7 @@ int main(int argc, char **argv) {
 }
 
 static void halt() {
+    curl_global_cleanup();
     syslog(LOG_INFO, "Terminating.");
     exit(EXIT_SUCCESS);
 }
